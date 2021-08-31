@@ -14,14 +14,10 @@ from pandas import json_normalize
 import time
 
 
-# ### 데이터 추출하기 : INST_NM, ASSETS_VAL, INTENT_VAL
+# 데이터 추출하기 : INST_NM, ASSETS_VAL, INTENT_VAL
 
 
-
-# ### 필요한 데이터로 데이터프레임 만들기 : TW_ATT_IP, TW_ATT_PORT, TW_DMG_PORT, TW_DMG_IP, DRULE_ATT_TYPE_CODE1, TW_ATT_CT_CODE, INTENT_VAL, ASSETS_VAL, INST_NM
-
-# In[4]:
-
+# 필요한 데이터로 데이터프레임 만들기 : TW_ATT_IP, TW_ATT_PORT, TW_DMG_PORT, TW_DMG_IP, DRULE_ATT_TYPE_CODE1, TW_ATT_CT_CODE, INTENT_VAL, ASSETS_VAL, INST_NM
 
 #1.기관
 INST_NM = pd.read_csv("./data/ts_data_accident-2020_sample_INST_NM.csv")
@@ -46,9 +42,6 @@ ASSETS_VAL_temp = pd.read_csv("./data/ts_data_accident-2020_sample_ASSETS_VAL.cs
 ASSETS_VAL_temp.drop(['Unnamed: 0'], axis = 1, inplace = True)
 
 
-# In[5]:
-
-
 # INTENT_VAL 수정
 # 보는 사람이 이해하기 쉽게 -> 0인 값은 지우되, 남아있는 값이 무엇의 값인지 알아볼 수 있도록 가공.
 cols = INTENT_VAL.columns.tolist()
@@ -66,9 +59,6 @@ INTENT = INTENT.rename(columns={INTENT.columns[0]:'INTENT_VAL'}, inplace=False)
 INTENT.head()
 
 
-# In[6]:
-
-
 # ASSETS_VAL 수정
 cols = ASSETS_VAL_temp.columns.tolist()
 ASSETS_list=[]
@@ -84,22 +74,6 @@ ASSETS = pd.DataFrame(ASSETS_list)
 #ASSETS.head()
 
 
-# In[ ]:
-
-
-'''
-# 의도 합치기
-# 값이 0인 INTENT_VAL 값을 지우다보니 INTENT_VAL_5만 살아남아 INTENT를 합칠 이유가 사라졌습니다...
-cols=INTENT_VAL.columns
-INTENT_combined = pd.DataFrame()
-INTENT_combined['INTENT_VAL'] = INTENT_VAL[cols].apply(lambda row: ', '.join(row.values.astype(str)), axis=1)
-INTENT_combined.head()
-'''
-
-
-# In[8]:
-
-
 # 자산 합치기
 cols = ASSETS.columns.tolist()
 ASSETS_combined = pd.DataFrame()
@@ -107,28 +81,16 @@ ASSETS_combined['ASSETS_VAL'] = ASSETS[cols].apply(lambda row: ', '.join(row.val
 ASSETS_combined.head()
 
 
-# ### PrefixSpan 에 필요한 라이브러리 설치 : pypi, prefixspan
-
-# In[ ]:
-
-
+# PrefixSpan 에 필요한 라이브러리 설치 : pypi, prefixspan
 get_ipython().system('pip install pypi')
 get_ipython().system('pip install prefixspan')
 
 
 # ### 필요한 라이브러리 불러오기 : PrefixSpan
-
-# In[10]:
-
-
 from prefixspan import PrefixSpan
 
 
 # ### PrefixSpan에 쓸 수 있게 list로 데이터 처리
-
-# In[11]:
-
-
 data = []
 for i in range(0,len(ASSETS_combined)):
     temp_list = []
@@ -143,44 +105,20 @@ for i in range(0,len(ASSETS_combined)):
     data.extend(temp_list)
 
 
-# In[12]:
-
-
+# PrefixSpan 실행
 ps = PrefixSpan(data)
 
 
-# ### 결과 확인
-
-# In[13]:
-
+# 결과 확인
 
 # 1. 빈도수가 데이터의 절반 이상인 것을 빈도순으로 배열
 print(ps.frequent(len(data)/2))
 
-
-# In[ ]:
-
-
-
-
-
-# In[14]:
-
-
 # 2. 빈도수 TOP 5, closed : A pattern is closed if there is no super-pattern with the same frequency.
 print(ps.topk(5, closed=True))
-
-
-# In[15]:
-
 
 # 3. 빈도수 2 이상, closed 
 print(ps.frequent(2, closed=True))
 
-
-# In[16]:
-
-
 # 4. 빈도수 2 이상, generator :  A pattern is generator if there is no sub-pattern with the same frequency
 print(ps.frequent(2, generator=True))
-
